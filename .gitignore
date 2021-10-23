@@ -1,3 +1,6 @@
 /venv
 *.pyc
 /.idea
+main.py
+static.py
+utils.py
