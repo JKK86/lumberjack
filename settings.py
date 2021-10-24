@@ -1,15 +1,21 @@
 import pygame
+from screeninfo import get_monitors
 
 
 class Settings:
     def __init__(self):
-        self.screen_width = 1200
-        self.screen_height = 800
+        self.screen_width = 800
+        self.screen_height = 450
         self.fullscreen = False
-        self.fullscreen_width = 1920
-        self.fullscreen_height = 1080
+
+        self.bg_width = 1920
+        self.bg_height = 1080
+
+        monitor = get_monitors()[0]
+        self.fullscreen_width = monitor.width
+        self.fullscreen_height = monitor.height
 
         self.bg_color = (150, 150, 0)
         self.FPS = 60
-        self.background = pygame.image.load('images/background.png')
-        self.bg_rect = self.background.get_rect()
+
+        self.number_of_clouds = 4
