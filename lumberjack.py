@@ -31,6 +31,7 @@ class Lumberjack:
 
         while True:
             self._check_events()
+            self._update_clouds()
             self._update_screen()
 
     def _check_events(self):
@@ -65,6 +66,15 @@ class Lumberjack:
     def _scale_to(self, objects: list, old_size, new_size):
         for obj in objects:
             obj.scale(old_size, new_size)
+
+    def _update_clouds(self):
+        screen_width = self.screen.get_width()
+        for i, cloud in enumerate(self.clouds):
+            cloud.x += self.settings.cloud_speed[i] * (screen_width / self.settings.bg_width)
+            cloud.rect.x = cloud.x
+            if cloud.rect.x > screen_width:
+                cloud.x = -cloud.rect.width
+                cloud.rect.x = cloud.x
 
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)

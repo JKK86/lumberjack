@@ -1,3 +1,5 @@
+import random
+
 import pygame
 from screeninfo import get_monitors
 
@@ -19,3 +21,4 @@ class Settings:
         self.FPS = 60
 
         self.number_of_clouds = 4
+        self.cloud_speed = [random.uniform(0.2, 1) for _ in range(self.number_of_clouds)]

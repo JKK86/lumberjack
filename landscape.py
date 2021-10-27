@@ -1,8 +1,10 @@
 import pygame
+from pygame.sprite import Sprite
 
 
-class Landscape:
+class Landscape(Sprite):
     def __init__(self, lj_game, image):
+        super(Landscape, self).__init__()
         self.screen = lj_game.screen
         self.screen_rect = lj_game.screen.get_rect()
         self.settings = lj_game.settings
@@ -29,19 +31,10 @@ class Landscape:
         self.rect.x = old_x
         self.rect.y = old_y
 
-# class Background(LandscapeClass):
-#     def __init__(self, lj_game):
-#         super(Background, self).__init__(lj_game)
-#         self.image = pygame.image.load('images/background.png')
-#
-#     def scale(self, old_size: tuple, new_size: tuple):
-#         super(Background, self).scale(old_size, new_size)
-#         new_image = self.image = pygame.image.load('images/background.png')
-
 
 class Cloud(Landscape):
     def __init__(self, lj_game, image, cloud_number):
         super(Cloud, self).__init__(lj_game, image)
         self.cloud_number = cloud_number
-        self.rect.top = 20
-        self.rect.x = 300 + 1.5 * 300 * (cloud_number - 1)
+        self.rect.topleft = self.screen_rect.topleft
+        self.x = float(self.rect.x)
