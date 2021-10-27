@@ -22,3 +22,6 @@ class Settings:
 
         self.number_of_clouds = 4
         self.cloud_speed = [random.uniform(0.2, 1) for _ in range(self.number_of_clouds)]
+
+        self.bee_speed = 10
+        self.bee_direction = -1

@@ -1,7 +1,7 @@
 import sys
 import pygame
 
-from landscape import Cloud, Landscape
+from landscape import Cloud, Landscape, Bee
 from settings import Settings
 
 
@@ -19,7 +19,9 @@ class Lumberjack:
 
         self.background = Landscape(self, 'background.png')
         self.clouds = [Cloud(self, f'chmurka_0{i}.png', i) for i in range(1, self.settings.number_of_clouds + 1)]
-        self.scalable = [self.background] + self.clouds
+        self.bee = Bee(self, 'bee_01.png')
+
+        self.scalable = [self.background, self.bee] + self.clouds
 
         self._scale_to(self.scalable,
                        (self.settings.bg_width, self.settings.bg_height),
@@ -32,6 +34,7 @@ class Lumberjack:
         while True:
             self._check_events()
             self._update_clouds()
+            self._update_bee()
             self._update_screen()
 
     def _check_events(self):
@@ -62,6 +65,7 @@ class Lumberjack:
                 (self.settings.fullscreen_width, self.settings.fullscreen_height), pygame.FULLSCREEN)
             self._scale_to(self.scalable, surface_size,
                            (self.settings.fullscreen_width, self.settings.fullscreen_height))
+        self.bee.set_screen(self.screen)
 
     def _scale_to(self, objects: list, old_size, new_size):
         for obj in objects:
@@ -76,11 +80,19 @@ class Lumberjack:
                 cloud.x = -cloud.rect.width
                 cloud.rect.x = cloud.x
 
+    def _update_bee(self):
+        if self.bee.check_edges():
+            self.settings.bee_direction *= -1
+            self.bee.flip(True, False)
+            self.bee.change_height()
+        self.bee.update()
+
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
         self.background.blit_me()
         for cloud in self.clouds:
             cloud.blit_me()
+        self.bee.blit_me()
         pygame.display.flip()
         self.clock.tick(self.settings.FPS)
 
