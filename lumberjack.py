@@ -1,7 +1,7 @@
 import sys
 import pygame
 
-from landscape import Cloud, Landscape, Bee
+from landscape import Cloud, LandscapeBaseClass, Bee, Trunk
 from settings import Settings
 
 
@@ -13,19 +13,21 @@ class Lumberjack:
         self.clock = pygame.time.Clock()
 
         self.settings = Settings()
-
         self.screen = pygame.display.set_mode(
             (self.settings.screen_width, self.settings.screen_height), pygame.RESIZABLE)
 
-        self.background = Landscape(self, 'background.png')
+        self.background = LandscapeBaseClass(self, 'background.png')
         self.clouds = [Cloud(self, f'chmurka_0{i}.png', i) for i in range(1, self.settings.number_of_clouds + 1)]
         self.bee = Bee(self, 'bee_01.png')
+        self.trunk = Trunk(self, 'pien_solo.png')
 
-        self.scalable = [self.background, self.bee] + self.clouds
+        self.scalable = [self.background, self.bee, self.trunk] + self.clouds
 
         self._scale_to(self.scalable,
                        (self.settings.bg_width, self.settings.bg_height),
-                       (self.settings.screen_width, self.settings.screen_height))
+                       (self.settings.screen_width, self.settings.screen_height),
+                       change_pos=False)
+        self.trunk.center_trunk(self.screen)
 
         pygame.display.set_caption("Lumberjack")
 
@@ -66,10 +68,11 @@ class Lumberjack:
             self._scale_to(self.scalable, surface_size,
                            (self.settings.fullscreen_width, self.settings.fullscreen_height))
         self.bee.set_screen(self.screen)
+        self.trunk.center_trunk(self.screen)
 
-    def _scale_to(self, objects: list, old_size, new_size):
+    def _scale_to(self, objects: list, old_size, new_size, change_pos=True):
         for obj in objects:
-            obj.scale(old_size, new_size)
+            obj.scale(old_size, new_size, change_pos)
 
     def _update_clouds(self):
         screen_width = self.screen.get_width()
@@ -93,6 +96,7 @@ class Lumberjack:
         for cloud in self.clouds:
             cloud.blit_me()
         self.bee.blit_me()
+        self.trunk.blit_me()
         pygame.display.flip()
         self.clock.tick(self.settings.FPS)
 
