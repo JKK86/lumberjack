@@ -63,6 +63,17 @@ class LandscapeBaseClass(Sprite):
             self.flipped_y = not self.flipped_y
         self.image = pygame.transform.flip(self.image, flip_x, flip_y)
 
+    def set_position(self, position):
+        self.rect.x = position[0]
+        self.rect.y = position[1]
+        self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
+
+    def set_screen(self, screen):
+        self.screen = screen
+        self.screen_width = self.screen.get_width()
+        self.screen_height = self.screen.get_height()
+
 
 class Cloud(LandscapeBaseClass):
     def __init__(self, lj_game, image, cloud_number, position: tuple = (0, 0)):
@@ -88,19 +99,12 @@ class Bee(LandscapeBaseClass):
         self.y = random.randint(100, self.screen_height - 100)
         self.rect.y = self.y
 
-    def set_screen(self, screen):
-        self.screen = screen
-        self.screen_width = self.screen.get_width()
-        self.screen_height = self.screen.get_height()
-
 
 class Tree(LandscapeBaseClass):
     def __init__(self, lj_game, image, position: tuple = (0, 0)):
         super(Tree, self).__init__(lj_game, image, position)
 
-    def set_position(self, position):
-        self.rect.x = position[0]
-        self.rect.y = position[1]
-        self.x = float(self.rect.x)
-        self.y = float(self.rect.y)
 
+class Lumberjack(LandscapeBaseClass):
+    def __init__(self, lj_game, image, position: tuple = (0, 0)):
+        super(Lumberjack, self).__init__(lj_game, image, position)

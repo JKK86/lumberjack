@@ -27,3 +27,4 @@ class Settings:
         self.bee_direction = -1
 
         self.slice_wood_scale = 900 / self.bg_height
+        self.lumberjack_scale = 1040 / self.bg_height

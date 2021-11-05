@@ -1,11 +1,11 @@
 import sys
 import pygame
 
-from landscape import Cloud, LandscapeBaseClass, Bee, Tree
+from landscape import Cloud, LandscapeBaseClass, Bee, Tree, Lumberjack
 from settings import Settings
 
 
-class Lumberjack:
+class LumberjackGame:
 
     def __init__(self):
         pygame.init()
@@ -25,9 +25,11 @@ class Lumberjack:
         self.trunk_base = Tree(self, 'pien_podstawa.png')
         self.tree = Tree(self, 'pien_caly.png')
         self.slice_wood = Tree(self, 'plaster_drewna.png')
+        self.lumberjack_ready = Lumberjack(self, 'drwal_01.png')
+        self.lumberjack_hit = Lumberjack(self, 'drwal_02.png')
 
         self.scalable = [self.background, self.bee, self.trunk, self.trunk_base, self.tree,
-                         self.slice_wood] + self.clouds
+                         self.slice_wood, self.lumberjack_ready, self.lumberjack_hit] + self.clouds
 
         self._scale_to(self.scalable,
                        (self.settings.bg_width, self.settings.bg_height),
@@ -41,6 +43,10 @@ class Lumberjack:
                                 self.screen_height - self.tree.rect.height + 11))
         self.slice_wood.set_position((self.screen_width / 2 - self.slice_wood.rect.width / 2,
                                       self.screen_height * self.settings.slice_wood_scale))
+        self.lumberjack_ready.set_position((self.trunk.x - 0.5 * self.trunk.rect.width - self.lumberjack_ready.rect.width,
+                                            self.screen_height * self.settings.lumberjack_scale - self.lumberjack_ready.rect.height))
+        self.lumberjack_hit.set_position((self.trunk.x - 0.5 * self.trunk.rect.width - self.lumberjack_ready.rect.width + 16,
+                                            self.screen_height * self.settings.lumberjack_scale - self.lumberjack_hit.rect.height))
 
         pygame.display.set_caption("Lumberjack")
 
@@ -113,10 +119,13 @@ class Lumberjack:
         self.slice_wood.blit_me()
         self.trunk.blit_me()
         # self.tree.blit_me()
+        self.lumberjack_ready.blit_me()
+        self.lumberjack_hit.blit_me()
+
         pygame.display.flip()
         self.clock.tick(self.settings.FPS)
 
 
 if __name__ == '__main__':
-    lj = Lumberjack()
+    lj = LumberjackGame()
     lj.run_game()
