@@ -5,7 +5,7 @@ from pygame.sprite import Sprite
 
 
 class LandscapeBaseClass(Sprite):
-    def __init__(self, lj_game, image):
+    def __init__(self, lj_game, image, position: tuple = (0, 0)):
         super(LandscapeBaseClass, self).__init__()
         self.screen = lj_game.screen
         self.screen_rect = lj_game.screen.get_rect()
@@ -21,8 +21,8 @@ class LandscapeBaseClass(Sprite):
         self.flipped_x = False
         self.flipped_y = False
 
-        self.rect.x = 0
-        self.rect.y = 0
+        self.rect.x = position[0]
+        self.rect.y = position[1]
 
         self.x = float(self.rect.x)
         self.y = float(self.rect.y)
@@ -65,22 +65,16 @@ class LandscapeBaseClass(Sprite):
 
 
 class Cloud(LandscapeBaseClass):
-    def __init__(self, lj_game, image, cloud_number):
-        super(Cloud, self).__init__(lj_game, image)
+    def __init__(self, lj_game, image, cloud_number, position: tuple = (0, 0)):
+        super(Cloud, self).__init__(lj_game, image, position)
         self.cloud_number = cloud_number
-        self.rect.topleft = self.screen_rect.topleft
 
 
 class Bee(LandscapeBaseClass):
-    def __init__(self, lj_game, image):
-        super(Bee, self).__init__(lj_game, image)
+    def __init__(self, lj_game, image, position: tuple = (0, 0)):
+        super(Bee, self).__init__(lj_game, image, position)
 
         self.overflow = int(100 * (self.screen_width / 500))
-        self.rect.x = self.screen_width - 100
-        self.rect.y = self.screen_height / 2
-
-        self.x = float(self.rect.x)
-        self.y = float(self.rect.y)
 
     def check_edges(self):
         if self.rect.x > self.screen_width + 2 * self.overflow or self.rect.x < -2 * self.overflow:
@@ -100,17 +94,13 @@ class Bee(LandscapeBaseClass):
         self.screen_height = self.screen.get_height()
 
 
-class Trunk(LandscapeBaseClass):
-    def __init__(self, lj_game, image):
-        super(Trunk, self).__init__(lj_game, image)
+class Tree(LandscapeBaseClass):
+    def __init__(self, lj_game, image, position: tuple = (0, 0)):
+        super(Tree, self).__init__(lj_game, image, position)
 
-        self.rect.x = self.screen_width / 2
-        self.rect.y = 0
-
+    def set_position(self, position):
+        self.rect.x = position[0]
+        self.rect.y = position[1]
         self.x = float(self.rect.x)
         self.y = float(self.rect.y)
 
-    def center_trunk(self, screen):
-        self.screen_rect = screen.get_rect()
-        self.rect.midtop = self.screen_rect.midtop
-        self.x = float(self.rect.x)

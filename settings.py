@@ -25,3 +25,5 @@ class Settings:
 
         self.bee_speed = 10
         self.bee_direction = -1
+
+        self.slice_wood_scale = 900 / self.bg_height
