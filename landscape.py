@@ -108,3 +108,8 @@ class Tree(LandscapeBaseClass):
 class Lumberjack(LandscapeBaseClass):
     def __init__(self, lj_game, image, position: tuple = (0, 0)):
         super(Lumberjack, self).__init__(lj_game, image, position)
+
+
+class BranchProvider(LandscapeBaseClass):
+    def __init__(self, lj_game, image, position: tuple = (0, 0)):
+        super(BranchProvider, self).__init__(lj_game, image, position)

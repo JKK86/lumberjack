@@ -1,7 +1,7 @@
 import sys
 import pygame
 
-from landscape import Cloud, LandscapeBaseClass, Bee, Tree, Lumberjack
+from landscape import Cloud, LandscapeBaseClass, Bee, Tree, Lumberjack, BranchProvider
 from settings import Settings
 
 
@@ -28,6 +28,8 @@ class LumberjackGame:
         self.lumberjack_ready = Lumberjack(self, 'drwal_01.png')
         self.lumberjack_hit = Lumberjack(self, 'drwal_02.png')
 
+        self.branches = pygame.sprite.Group()
+
         self.scalable = [self.background, self.bee, self.trunk, self.trunk_base, self.tree,
                          self.slice_wood, self.lumberjack_ready, self.lumberjack_hit] + self.clouds
 
@@ -52,6 +54,8 @@ class LumberjackGame:
 
         self.hit = False
         self.lumberjack_on_left = True
+
+        self._create_branches()
 
         pygame.display.set_caption("Lumberjack")
 
@@ -108,6 +112,8 @@ class LumberjackGame:
                 (self.settings.screen_width, self.settings.screen_height),
                 pygame.RESIZABLE)
             self._scale_to(self.scalable, surface_size, (self.settings.screen_width, self.settings.screen_height))
+            for branch in self.branches.sprites():
+                branch.scale(surface_size, (self.settings.screen_width, self.settings.screen_height))
         else:
             self.settings.fullscreen = True
             surface_size = self.screen.get_size()
@@ -115,12 +121,32 @@ class LumberjackGame:
                 (self.settings.fullscreen_width, self.settings.fullscreen_height), pygame.FULLSCREEN)
             self._scale_to(self.scalable, surface_size,
                            (self.settings.fullscreen_width, self.settings.fullscreen_height))
+            for branch in self.branches.sprites():
+                branch.scale(surface_size, (self.settings.fullscreen_width, self.settings.fullscreen_height))
         self.bee.set_screen(self.screen)
         # self.trunk.set_position((self.screen.get_width() / 2 - self.trunk.rect.width / 2, 0))
 
     def _scale_to(self, objects: list, old_size, new_size, change_pos=True):
         for obj in objects:
             obj.scale(old_size, new_size, change_pos)
+
+    def _create_branches(self):
+        for _ in range(self.settings.branch_count):
+            self._create_branch()
+            self._create_branch(left=False)
+        for branch in self.branches.sprites():
+            branch.scale((self.settings.bg_width, self.settings.bg_height),
+                         (self.settings.screen_width, self.settings.screen_height),
+                         change_pos=False)
+
+    def _create_branch(self, left=True):
+        if left:
+            branch = BranchProvider(self, 'konar_lewy.png',
+                                    position=(self.settings.branch_scale_left * self.screen_width, 100))
+        else:
+            branch = BranchProvider(self, 'konar_prawy.png',
+                                    position=(self.settings.branch_scale_right * self.screen_width, 100))
+        self.branches.add(branch)
 
     def _update_clouds(self):
         screen_width = self.screen.get_width()
@@ -154,6 +180,8 @@ class LumberjackGame:
         else:
             self.tree.blit_me()
             self.lumberjack_ready.blit_me()
+
+        self.branches.draw(self.screen)
 
         pygame.display.flip()
         self.clock.tick(self.settings.FPS)
