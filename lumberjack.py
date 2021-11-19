@@ -43,10 +43,15 @@ class LumberjackGame:
                                 self.screen_height - self.tree.rect.height + 11))
         self.slice_wood.set_position((self.screen_width / 2 - self.slice_wood.rect.width / 2,
                                       self.screen_height * self.settings.slice_wood_scale))
-        self.lumberjack_ready.set_position((self.trunk.x - 0.5 * self.trunk.rect.width - self.lumberjack_ready.rect.width,
-                                            self.screen_height * self.settings.lumberjack_scale - self.lumberjack_ready.rect.height))
-        self.lumberjack_hit.set_position((self.trunk.x - 0.5 * self.trunk.rect.width - self.lumberjack_ready.rect.width + 16,
-                                            self.screen_height * self.settings.lumberjack_scale - self.lumberjack_hit.rect.height))
+        self.lumberjack_ready.set_position(
+            (self.trunk.x - 0.5 * self.trunk.rect.width - self.lumberjack_ready.rect.width,
+             self.screen_height * self.settings.lumberjack_scale - self.lumberjack_ready.rect.height))
+        self.lumberjack_hit.set_position(
+            (self.trunk.x - 0.5 * self.trunk.rect.width - self.lumberjack_ready.rect.width + 16,
+             self.screen_height * self.settings.lumberjack_scale - self.lumberjack_hit.rect.height))
+
+        self.hit = False
+        self.lumberjack_on_left = True
 
         pygame.display.set_caption("Lumberjack")
 
@@ -64,12 +69,36 @@ class LumberjackGame:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
+            elif event.type == pygame.KEYUP:
+                self._check_keyup_events(event)
 
     def _check_keydown_events(self, event):
         if event.key == pygame.K_ESCAPE:
             sys.exit()
         elif event.key == pygame.K_f:
             self._change_fullscreen()
+        elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+            self.hit = True
+            if event.key == pygame.K_LEFT and not self.lumberjack_on_left:
+                self.lumberjack_ready.flip(True, False)
+                self.lumberjack_hit.flip(True, False)
+                self.lumberjack_on_left = True
+                self.lumberjack_ready.x -= 3.44 * self.trunk.rect.width
+                self.lumberjack_ready.rect.x = self.lumberjack_ready.x
+                self.lumberjack_hit.x -= 2 * self.trunk.rect.width
+                self.lumberjack_hit.rect.x = self.lumberjack_hit.x
+            if event.key == pygame.K_RIGHT and self.lumberjack_on_left:
+                self.lumberjack_ready.flip(True, False)
+                self.lumberjack_hit.flip(True, False)
+                self.lumberjack_on_left = False
+                self.lumberjack_ready.x += 3.44 * self.trunk.rect.width
+                self.lumberjack_ready.rect.x = self.lumberjack_ready.x
+                self.lumberjack_hit.x += 2 * self.trunk.rect.width
+                self.lumberjack_hit.rect.x = self.lumberjack_hit.x
+
+    def _check_keyup_events(self, event):
+        if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+            self.hit = False
 
     def _change_fullscreen(self):
         if self.settings.fullscreen:
@@ -115,12 +144,16 @@ class LumberjackGame:
         for cloud in self.clouds:
             cloud.blit_me()
         self.bee.blit_me()
-        self.trunk_base.blit_me()
+
         self.slice_wood.blit_me()
-        self.trunk.blit_me()
-        # self.tree.blit_me()
-        self.lumberjack_ready.blit_me()
-        self.lumberjack_hit.blit_me()
+
+        if self.hit:
+            self.trunk_base.blit_me()
+            self.trunk.blit_me()
+            self.lumberjack_hit.blit_me()
+        else:
+            self.tree.blit_me()
+            self.lumberjack_ready.blit_me()
 
         pygame.display.flip()
         self.clock.tick(self.settings.FPS)
