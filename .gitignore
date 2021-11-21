@@ -1,8 +1,4 @@
 /venv
 *.pyc
 /.idea
-main.py
-static.py
-utils.py
-bee_behaviour.py
-branch_provider.py
+/pg_zero

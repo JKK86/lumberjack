@@ -1,3 +1,4 @@
+import random
 import sys
 import pygame
 
@@ -28,7 +29,9 @@ class LumberjackGame:
         self.lumberjack_ready = Lumberjack(self, 'drwal_01.png')
         self.lumberjack_hit = Lumberjack(self, 'drwal_02.png')
 
-        self.branches = pygame.sprite.Group()
+        self.branches_left = [self._create_branch() for _ in range(self.settings.branch_count)]
+        self.branches_right = [self._create_branch(left=False) for _ in range(self.settings.branch_count)]
+        self.branches = []
 
         self.scalable = [self.background, self.bee, self.trunk, self.trunk_base, self.tree,
                          self.slice_wood, self.lumberjack_ready, self.lumberjack_hit] + self.clouds
@@ -54,6 +57,10 @@ class LumberjackGame:
 
         self.hit = False
         self.lumberjack_on_left = True
+
+        self.last_taken_left = 0
+        self.last_taken_right = 0
+        self.top = 0
 
         self._create_branches()
 
@@ -83,6 +90,7 @@ class LumberjackGame:
             self._change_fullscreen()
         elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
             self.hit = True
+            self._hit_tree()
             if event.key == pygame.K_LEFT and not self.lumberjack_on_left:
                 self.lumberjack_ready.flip(True, False)
                 self.lumberjack_hit.flip(True, False)
@@ -104,6 +112,9 @@ class LumberjackGame:
         if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
             self.hit = False
 
+    def get_all_branches(self):
+        return self.branches_left + self.branches_right
+
     def _change_fullscreen(self):
         if self.settings.fullscreen:
             self.settings.fullscreen = False
@@ -112,8 +123,8 @@ class LumberjackGame:
                 (self.settings.screen_width, self.settings.screen_height),
                 pygame.RESIZABLE)
             self._scale_to(self.scalable, surface_size, (self.settings.screen_width, self.settings.screen_height))
-            for branch in self.branches.sprites():
-                branch.scale(surface_size, (self.settings.screen_width, self.settings.screen_height))
+            self._scale_to(self.get_all_branches(), surface_size,
+                           (self.settings.screen_width, self.settings.screen_height))
         else:
             self.settings.fullscreen = True
             surface_size = self.screen.get_size()
@@ -121,8 +132,8 @@ class LumberjackGame:
                 (self.settings.fullscreen_width, self.settings.fullscreen_height), pygame.FULLSCREEN)
             self._scale_to(self.scalable, surface_size,
                            (self.settings.fullscreen_width, self.settings.fullscreen_height))
-            for branch in self.branches.sprites():
-                branch.scale(surface_size, (self.settings.fullscreen_width, self.settings.fullscreen_height))
+            self._scale_to(self.get_all_branches(), surface_size,
+                           (self.settings.fullscreen_width, self.settings.fullscreen_height))
         self.bee.set_screen(self.screen)
         # self.trunk.set_position((self.screen.get_width() / 2 - self.trunk.rect.width / 2, 0))
 
@@ -132,12 +143,45 @@ class LumberjackGame:
 
     def _create_branches(self):
         for _ in range(self.settings.branch_count):
-            self._create_branch()
-            self._create_branch(left=False)
-        for branch in self.branches.sprites():
-            branch.scale((self.settings.bg_width, self.settings.bg_height),
-                         (self.settings.screen_width, self.settings.screen_height),
-                         change_pos=False)
+            start_point = self.settings.branch_start_height_scale * self.screen_height
+            step = self.settings.branch_step_scale * self.screen_height
+            rand = random.randint(0, 2)
+            if rand == 0:
+                self.branches.append(None)
+            elif rand == 1:
+                self.branches.append((self.branches_left[self.last_taken_left], 'left'))
+                self.last_taken_left += 1
+            elif rand == 2:
+                self.branches.append((self.branches_right[self.last_taken_right], 'right'))
+                self.last_taken_right += 1
+            for i, branch in enumerate(self.branches):
+                if branch is None:
+                    continue
+                branch[0].y = start_point - i * step
+                branch[0].rect.y = branch[0].y
+            self.top = start_point - len(self.branches) * step
+        self._scale_to(self.get_all_branches(), (self.settings.bg_width, self.settings.bg_height),
+                       (self.settings.screen_width, self.settings.screen_height),
+                       change_pos=False)
+
+    def _add_branch(self):
+        rand = random.randint(0, 2)
+        if rand == 0:
+            self.branches.append(None)
+        elif rand == 1:
+            if self.last_taken_left == self.settings.branch_count:
+                self.last_taken_left = 0
+            self.branches_left[self.last_taken_left].y = self.top
+            self.branches_left[self.last_taken_left].rect.y = self.branches_left[self.last_taken_left].y
+            self.branches.append((self.branches_left[self.last_taken_left], 'left'))
+            self.last_taken_left += 1
+        elif rand == 2:
+            if self.last_taken_right == self.settings.branch_count:
+                self.last_taken_right = 0
+            self.branches_right[self.last_taken_right].y = self.top
+            self.branches_right[self.last_taken_right].rect.y = self.branches_right[self.last_taken_right].y
+            self.branches.append((self.branches_right[self.last_taken_right], 'right'))
+            self.last_taken_right += 1
 
     def _create_branch(self, left=True):
         if left:
@@ -146,7 +190,23 @@ class LumberjackGame:
         else:
             branch = BranchProvider(self, 'konar_prawy.png',
                                     position=(self.settings.branch_scale_right * self.screen_width, 100))
-        self.branches.add(branch)
+        return branch
+
+    def _recalculate_screen(self):
+        self.screen_width = self.screen.get_width()
+        self.screen_height = self.screen.get_height()
+        start_point = self.settings.branch_start_height_scale * self.screen_height
+        step = self.settings.branch_step_scale * self.screen_height
+        self.top = start_point - len(self.branches) * step
+
+    def _hit_tree(self):
+        self._recalculate_screen()
+        self._add_branch()
+        for branch in self.branches:
+            if branch is not None:
+                branch[0].y += self.settings.branch_step_scale * self.screen_height
+                branch[0].rect.y = branch[0].y
+        self.branches.pop(0)
 
     def _update_clouds(self):
         screen_width = self.screen.get_width()
@@ -171,7 +231,7 @@ class LumberjackGame:
             cloud.blit_me()
         self.bee.blit_me()
 
-        self.slice_wood.blit_me()
+        # self.slice_wood.blit_me()
 
         if self.hit:
             self.trunk_base.blit_me()
@@ -181,7 +241,9 @@ class LumberjackGame:
             self.tree.blit_me()
             self.lumberjack_ready.blit_me()
 
-        self.branches.draw(self.screen)
+        for branch in self.branches:
+            if branch is not None:
+                branch[0].blit_me()
 
         pygame.display.flip()
         self.clock.tick(self.settings.FPS)

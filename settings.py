@@ -27,6 +27,8 @@ class Settings:
         self.bee_direction = -1
 
         self.branch_count = 10
+        self.branch_step_scale = 0.25
+        self.branch_start_height_scale = 0.55
 
         self.slice_wood_scale = 900 / self.bg_height
         self.lumberjack_scale = 1040 / self.bg_height
