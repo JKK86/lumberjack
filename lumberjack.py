@@ -2,6 +2,9 @@ import random
 import sys
 import pygame
 
+import pygame.font
+
+from game_stats import GameStats
 from landscape import Cloud, LandscapeBaseClass, Bee, Tree, Lumberjack, BranchProvider
 from settings import Settings
 
@@ -14,10 +17,14 @@ class LumberjackGame:
         self.clock = pygame.time.Clock()
 
         self.settings = Settings()
+        self.stats = GameStats(self)
+
         self.screen = pygame.display.set_mode(
             (self.settings.screen_width, self.settings.screen_height), pygame.RESIZABLE)
         self.screen_width = self.screen.get_width()
         self.screen_height = self.screen.get_height()
+
+        self.font = pygame.font.Font('fonts/bungee-regular.ttf', 50)
 
         self.background = LandscapeBaseClass(self, 'background.png')
         self.clouds = [Cloud(self, f'chmurka_0{i}.png', i) for i in range(1, self.settings.number_of_clouds + 1)]
@@ -64,14 +71,19 @@ class LumberjackGame:
 
         self._create_branches()
 
+        self.collision = False
+
         pygame.display.set_caption("Lumberjack")
 
     def run_game(self):
 
         while True:
             self._check_events()
-            self._update_clouds()
-            self._update_bee()
+
+            if self.stats.game_active:
+                self._update_clouds()
+                self._update_bee()
+
             self._update_screen()
 
     def _check_events(self):
@@ -88,25 +100,31 @@ class LumberjackGame:
             sys.exit()
         elif event.key == pygame.K_f:
             self._change_fullscreen()
-        elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-            self.hit = True
-            self._hit_tree()
-            if event.key == pygame.K_LEFT and not self.lumberjack_on_left:
-                self.lumberjack_ready.flip(True, False)
-                self.lumberjack_hit.flip(True, False)
-                self.lumberjack_on_left = True
-                self.lumberjack_ready.x -= 3.44 * self.trunk.rect.width
-                self.lumberjack_ready.rect.x = self.lumberjack_ready.x
-                self.lumberjack_hit.x -= 2 * self.trunk.rect.width
-                self.lumberjack_hit.rect.x = self.lumberjack_hit.x
-            if event.key == pygame.K_RIGHT and self.lumberjack_on_left:
-                self.lumberjack_ready.flip(True, False)
-                self.lumberjack_hit.flip(True, False)
-                self.lumberjack_on_left = False
-                self.lumberjack_ready.x += 3.44 * self.trunk.rect.width
-                self.lumberjack_ready.rect.x = self.lumberjack_ready.x
-                self.lumberjack_hit.x += 2 * self.trunk.rect.width
-                self.lumberjack_hit.rect.x = self.lumberjack_hit.x
+        if self.stats.game_active:
+            if event.key == pygame.K_LEFT:
+                self.collision = self._check_lumberjack_branch_collision('left')
+            if event.key == pygame.K_RIGHT:
+                self.collision = self._check_lumberjack_branch_collision('right')
+
+            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                self.hit = True
+                self._hit_tree()
+                if event.key == pygame.K_LEFT and not self.lumberjack_on_left:
+                    self.lumberjack_ready.flip(True, False)
+                    self.lumberjack_hit.flip(True, False)
+                    self.lumberjack_on_left = True
+                    self.lumberjack_ready.x -= 3.44 * self.trunk.rect.width
+                    self.lumberjack_ready.rect.x = self.lumberjack_ready.x
+                    self.lumberjack_hit.x -= 2 * self.trunk.rect.width
+                    self.lumberjack_hit.rect.x = self.lumberjack_hit.x
+                if event.key == pygame.K_RIGHT and self.lumberjack_on_left:
+                    self.lumberjack_ready.flip(True, False)
+                    self.lumberjack_hit.flip(True, False)
+                    self.lumberjack_on_left = False
+                    self.lumberjack_ready.x += 3.44 * self.trunk.rect.width
+                    self.lumberjack_ready.rect.x = self.lumberjack_ready.x
+                    self.lumberjack_hit.x += 2 * self.trunk.rect.width
+                    self.lumberjack_hit.rect.x = self.lumberjack_hit.x
 
     def _check_keyup_events(self, event):
         if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
@@ -122,20 +140,28 @@ class LumberjackGame:
             self.screen = pygame.display.set_mode(
                 (self.settings.screen_width, self.settings.screen_height),
                 pygame.RESIZABLE)
+            self.screen_width = self.screen.get_width()
+            self.screen_height = self.screen.get_height()
+
             self._scale_to(self.scalable, surface_size, (self.settings.screen_width, self.settings.screen_height))
             self._scale_to(self.get_all_branches(), surface_size,
                            (self.settings.screen_width, self.settings.screen_height))
+            self.font = pygame.font.Font('fonts/bungee-regular.ttf', int(50 * (self.screen_width / self.settings.screen_width)))
+
         else:
             self.settings.fullscreen = True
             surface_size = self.screen.get_size()
             self.screen = pygame.display.set_mode(
                 (self.settings.fullscreen_width, self.settings.fullscreen_height), pygame.FULLSCREEN)
+            self.screen_width = self.screen.get_width()
+            self.screen_height = self.screen.get_height()
             self._scale_to(self.scalable, surface_size,
                            (self.settings.fullscreen_width, self.settings.fullscreen_height))
             self._scale_to(self.get_all_branches(), surface_size,
                            (self.settings.fullscreen_width, self.settings.fullscreen_height))
         self.bee.set_screen(self.screen)
-        # self.trunk.set_position((self.screen.get_width() / 2 - self.trunk.rect.width / 2, 0))
+        self.font = pygame.font.Font('fonts/bungee-regular.ttf',
+                                     int(50 * (self.screen_width / self.settings.screen_width)))
 
     def _scale_to(self, objects: list, old_size, new_size, change_pos=True):
         for obj in objects:
@@ -208,6 +234,16 @@ class LumberjackGame:
                 branch[0].rect.y = branch[0].y
         self.branches.pop(0)
 
+    def _check_lumberjack_branch_collision(self, key):
+        last = self.branches[0]
+        if last is None:
+            return False
+        if last[1] == 'left' and key == 'left':
+            return True
+        if last[1] == 'right' and key == 'right':
+            return True
+        return False
+
     def _update_clouds(self):
         screen_width = self.screen.get_width()
         for i, cloud in enumerate(self.clouds):
@@ -236,10 +272,19 @@ class LumberjackGame:
         if self.hit:
             self.trunk_base.blit_me()
             self.trunk.blit_me()
-            self.lumberjack_hit.blit_me()
+            if not self.collision:
+                self.lumberjack_hit.blit_me()
         else:
             self.tree.blit_me()
-            self.lumberjack_ready.blit_me()
+            if not self.collision:
+                self.lumberjack_ready.blit_me()
+
+        if self.collision:
+            self.stats.game_active = False
+            self.lose_text = self.font.render('Zgnieciony', True, (255, 127, 0))
+            self.lose_text_rect = self.lose_text.get_rect()
+            self.lose_text_rect.center = (self.screen_width / 2, self.screen_height / 2)
+            self.screen.blit(self.lose_text, self.lose_text_rect)
 
         for branch in self.branches:
             if branch is not None:
