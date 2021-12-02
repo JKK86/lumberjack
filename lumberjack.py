@@ -6,6 +6,7 @@ import pygame.font
 
 from game_stats import GameStats
 from landscape import Cloud, LandscapeBaseClass, Bee, Tree, Lumberjack, BranchProvider
+from scoreboard import Scoreboard
 from settings import Settings
 from timer import Timer
 
@@ -74,6 +75,7 @@ class LumberjackGame:
 
         self.collision = False
 
+        self.sb = Scoreboard(self)
         self.timer = Timer(self)
 
         pygame.display.set_caption("Lumberjack")
@@ -114,6 +116,7 @@ class LumberjackGame:
                 self.hit = True
                 self._hit_tree()
                 self.stats.score += 1
+                self.sb.prep_score()
                 self.timer.increase_time()
                 self.timer.prep_timer()
 
@@ -312,6 +315,7 @@ class LumberjackGame:
             if branch is not None:
                 branch[0].blit_me()
 
+        self.sb.show_score()
         self.timer.draw()
 
         pygame.display.flip()
