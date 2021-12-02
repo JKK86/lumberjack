@@ -34,3 +34,8 @@ class Settings:
         self.lumberjack_scale = 1040 / self.bg_height
         self.branch_scale_left = 447 / self.bg_width
         self.branch_scale_right = 1037 / self.bg_width
+
+        self.text_color = (255, 127, 0)
+
+        self.time_limit = 5
+        self.lives_limit = 1

@@ -7,6 +7,7 @@ import pygame.font
 from game_stats import GameStats
 from landscape import Cloud, LandscapeBaseClass, Bee, Tree, Lumberjack, BranchProvider
 from settings import Settings
+from timer import Timer
 
 
 class LumberjackGame:
@@ -73,6 +74,8 @@ class LumberjackGame:
 
         self.collision = False
 
+        self.timer = Timer(self)
+
         pygame.display.set_caption("Lumberjack")
 
     def run_game(self):
@@ -83,6 +86,7 @@ class LumberjackGame:
             if self.stats.game_active:
                 self._update_clouds()
                 self._update_bee()
+                self._update_timer()
 
             self._update_screen()
 
@@ -109,6 +113,10 @@ class LumberjackGame:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 self.hit = True
                 self._hit_tree()
+                self.stats.score += 1
+                self.timer.increase_time()
+                self.timer.prep_timer()
+
                 if event.key == pygame.K_LEFT and not self.lumberjack_on_left:
                     self.lumberjack_ready.flip(True, False)
                     self.lumberjack_hit.flip(True, False)
@@ -244,6 +252,13 @@ class LumberjackGame:
             return True
         return False
 
+    def _game_over(self, msg):
+        self.stats.game_active = False
+        self.lose_text = self.font.render(msg, True, self.settings.text_color)
+        self.lose_text_rect = self.lose_text.get_rect()
+        self.lose_text_rect.center = (self.screen_width / 2, self.screen_height / 2)
+        self.screen.blit(self.lose_text, self.lose_text_rect)
+
     def _update_clouds(self):
         screen_width = self.screen.get_width()
         for i, cloud in enumerate(self.clouds):
@@ -259,6 +274,14 @@ class LumberjackGame:
             self.bee.flip(True, False)
             self.bee.change_height()
         self.bee.update()
+
+    def _update_timer(self):
+        self.timer.update()
+        self.timer.prep_timer()
+        if self.stats.time_left < 0 and not self.collision:
+            self.stats.time_left = 0
+            self.collision = True
+            self.timer.timeout = True
 
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
@@ -280,15 +303,16 @@ class LumberjackGame:
                 self.lumberjack_ready.blit_me()
 
         if self.collision:
-            self.stats.game_active = False
-            self.lose_text = self.font.render('Zgnieciony', True, (255, 127, 0))
-            self.lose_text_rect = self.lose_text.get_rect()
-            self.lose_text_rect.center = (self.screen_width / 2, self.screen_height / 2)
-            self.screen.blit(self.lose_text, self.lose_text_rect)
+            if self.timer.timeout:
+                self._game_over("Koniec czasu")
+            else:
+                self._game_over("Zgnieciony")
 
         for branch in self.branches:
             if branch is not None:
                 branch[0].blit_me()
+
+        self.timer.draw()
 
         pygame.display.flip()
         self.clock.tick(self.settings.FPS)
