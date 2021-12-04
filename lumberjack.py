@@ -121,9 +121,10 @@ class LumberjackGame:
         if self.stats.game_active:
             if event.key == pygame.K_LEFT:
                 self.collision = self._check_lumberjack_branch_collision('left')
+                self._update_slice_wood((self.screen_width - self.slice_wood.rect.width / 2, self.screen_height / 2))
             if event.key == pygame.K_RIGHT:
                 self.collision = self._check_lumberjack_branch_collision('right')
-
+                self._update_slice_wood((0 - self.slice_wood.rect.width / 2, self.screen_height / 2))
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 self.hit = True
                 self._hit_tree()
@@ -292,6 +293,9 @@ class LumberjackGame:
             self.bee.change_height()
         self.bee.update()
 
+    def _update_slice_wood(self, pos):
+        self.slice_wood.set_position(pos)
+
     def _update_timer(self):
         self.timer.update()
         self.timer.prep_timer()
@@ -307,10 +311,9 @@ class LumberjackGame:
             cloud.blit_me()
         self.bee.blit_me()
 
-        # self.slice_wood.blit_me()
-
         if self.hit:
             self.trunk_base.blit_me()
+            self.slice_wood.blit_me()
             self.trunk.blit_me()
             if not self.collision:
                 self.lumberjack_hit.blit_me()
