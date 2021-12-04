@@ -45,16 +45,16 @@ class Timer:
         self.last_time = now
 
     def increase_time(self):
-        if self.stats.score % 1000 == 0:
+        if self.stats.score % 10000 == 0:
             self.stats.time_left += 5
 
-        if self.stats.score < 1000:
-            self.stats.time_left += 2 / self.stats.score + 0.18
-        if 1000 < self.stats.score < 2000:
-            self.stats.time_left += 2 / self.stats.score + 0.15
-        if 2000 < self.stats.score < 4000:
-            self.stats.time_left += 2 / self.stats.score + 0.14
-        if 4000 < self.stats.score < 8000:
-            self.stats.time_left += 2 / self.stats.score + 0.135
-        if self.stats.score > 8000:
-            self.stats.time_left += 2 / self.stats.score + 0.129
+        if self.stats.score < 10000:
+            self.stats.time_left += 20 / self.stats.score + 0.18
+        if 10000 < self.stats.score < 20000:
+            self.stats.time_left += 20 / self.stats.score + 0.15
+        if 20000 < self.stats.score < 40000:
+            self.stats.time_left += 20 / self.stats.score + 0.14
+        if 40000 < self.stats.score < 80000:
+            self.stats.time_left += 20 / self.stats.score + 0.135
+        if self.stats.score > 80000:
+            self.stats.time_left += 20 / self.stats.score + 0.129

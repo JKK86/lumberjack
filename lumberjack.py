@@ -92,6 +92,16 @@ class LumberjackGame:
 
             self._update_screen()
 
+    def _start_game(self):
+        self.stats.reset_stats()
+        self.stats.game_active = True
+        self.timer.last_time = 0
+        self.timer.timeout = False
+        self.collision = False
+        self.hit = False
+        self.sb.prep_score()
+        self.timer.prep_timer()
+
     def _check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -104,6 +114,8 @@ class LumberjackGame:
     def _check_keydown_events(self, event):
         if event.key == pygame.K_ESCAPE:
             sys.exit()
+        elif event.key == pygame.K_RETURN and not self.stats.game_active:
+            self._start_game()
         elif event.key == pygame.K_f:
             self._change_fullscreen()
         if self.stats.game_active:
@@ -115,8 +127,9 @@ class LumberjackGame:
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 self.hit = True
                 self._hit_tree()
-                self.stats.score += 1
+                self.stats.score += 10
                 self.sb.prep_score()
+                self.sb.check_high_score()
                 self.timer.increase_time()
                 self.timer.prep_timer()
 
@@ -157,7 +170,8 @@ class LumberjackGame:
             self._scale_to(self.scalable, surface_size, (self.settings.screen_width, self.settings.screen_height))
             self._scale_to(self.get_all_branches(), surface_size,
                            (self.settings.screen_width, self.settings.screen_height))
-            self.font = pygame.font.Font('fonts/bungee-regular.ttf', int(50 * (self.screen_width / self.settings.screen_width)))
+            self.font = pygame.font.Font('fonts/bungee-regular.ttf',
+                                         int(50 * (self.screen_width / self.settings.screen_width)))
 
         else:
             self.settings.fullscreen = True
@@ -306,6 +320,7 @@ class LumberjackGame:
                 self.lumberjack_ready.blit_me()
 
         if self.collision:
+            self.stats.game_active = False
             if self.timer.timeout:
                 self._game_over("Koniec czasu")
             else:
@@ -317,7 +332,10 @@ class LumberjackGame:
 
         self.sb.show_score()
         self.timer.draw()
-
+        #
+        # if not self.stats.game_active:
+        #     self.play_button.draw_button()
+        #
         pygame.display.flip()
         self.clock.tick(self.settings.FPS)
 
