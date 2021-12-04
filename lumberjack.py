@@ -30,20 +30,21 @@ class LumberjackGame:
 
         self.background = LandscapeBaseClass(self, 'background.png')
         self.clouds = [Cloud(self, f'chmurka_0{i}.png', i) for i in range(1, self.settings.number_of_clouds + 1)]
-        self.bee = Bee(self, 'bee_01.png', position=(self.screen.get_width() - 100, self.screen.get_height() / 2))
+        self.bee = Bee(self, 'bee_01.png', position=(self.screen_width - 100, self.screen_height / 2))
         self.trunk = Tree(self, 'pien_solo.png')
         self.trunk_base = Tree(self, 'pien_podstawa.png')
         self.tree = Tree(self, 'pien_caly.png')
         self.slice_wood = Tree(self, 'plaster_drewna.png')
         self.lumberjack_ready = Lumberjack(self, 'drwal_01.png')
         self.lumberjack_hit = Lumberjack(self, 'drwal_02.png')
+        self.grave = LandscapeBaseClass(self, 'rip.png', position=(self.screen_width / 4, self.screen_height * (2 / 3)))
 
         self.branches_left = [self._create_branch() for _ in range(self.settings.branch_count)]
         self.branches_right = [self._create_branch(left=False) for _ in range(self.settings.branch_count)]
         self.branches = []
 
         self.scalable = [self.background, self.bee, self.trunk, self.trunk_base, self.tree,
-                         self.slice_wood, self.lumberjack_ready, self.lumberjack_hit] + self.clouds
+                         self.slice_wood, self.lumberjack_ready, self.lumberjack_hit, self.grave] + self.clouds
 
         self._scale_to(self.scalable,
                        (self.settings.bg_width, self.settings.bg_height),
@@ -328,6 +329,7 @@ class LumberjackGame:
                 self._game_over("Koniec czasu")
             else:
                 self._game_over("Zgnieciony")
+            self.grave.blit_me()
 
         for branch in self.branches:
             if branch is not None:
