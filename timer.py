@@ -17,6 +17,7 @@ class Timer:
         self.last_time = 0
 
         self.timeout = False
+        self.power_up_sound = pygame.mixer.Sound('sounds/power_up.wav')
 
         self.prep_timer()
 
@@ -33,6 +34,7 @@ class Timer:
                                 self.screen_height - 20 * self.screen_height / 450 - 20,
                                 self.timer_width, self.timer_height)
 
+
     def draw(self):
         self.screen.fill(self.timer_color, self.rect)
 
@@ -47,6 +49,7 @@ class Timer:
     def increase_time(self):
         if self.stats.score % 10000 == 0:
             self.stats.time_left += 5
+            self.power_up_sound.play()
 
         if self.stats.score < 10000:
             self.stats.time_left += 20 / self.stats.score + 0.18
