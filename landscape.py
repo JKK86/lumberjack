@@ -86,6 +86,7 @@ class Bee(LandscapeBaseClass):
         super(Bee, self).__init__(lj_game, image, position)
 
         self.overflow = int(100 * (self.screen_width / 500))
+        self.sound = pygame.mixer.Sound('sounds/bee.wav')
 
     def check_edges(self):
         if self.rect.x > self.screen_width + 2 * self.overflow or self.rect.x < -2 * self.overflow:

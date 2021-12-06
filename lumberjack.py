@@ -79,6 +79,11 @@ class LumberjackGame:
         self.sb = Scoreboard(self)
         self.timer = Timer(self)
 
+        self.hit_sound = pygame.mixer.Sound('sounds/hit_tree.wav')
+        self.fail_sound = pygame.mixer.Sound('sounds/groan.wav')
+        pygame.mixer.music.load('music/lumberjack_theme.mp3')
+        pygame.mixer.music.play(-1)
+
         pygame.display.set_caption("Lumberjack")
 
     def run_game(self):
@@ -102,6 +107,8 @@ class LumberjackGame:
         self.hit = False
         self.sb.prep_score()
         self.timer.prep_timer()
+        pygame.mixer.music.load('music/nature.mp3')
+        pygame.mixer.music.play(-1)
 
     def _check_events(self):
         for event in pygame.event.get():
@@ -122,13 +129,18 @@ class LumberjackGame:
         if self.stats.game_active:
             if event.key == pygame.K_LEFT:
                 self.collision = self._check_lumberjack_branch_collision('left')
+                if self.collision:
+                    self.fail_sound.play()
                 self._update_slice_wood((self.screen_width - self.slice_wood.rect.width / 2, self.screen_height / 2))
             if event.key == pygame.K_RIGHT:
                 self.collision = self._check_lumberjack_branch_collision('right')
+                if self.collision:
+                    self.fail_sound.play()
                 self._update_slice_wood((0 - self.slice_wood.rect.width / 2, self.screen_height / 2))
             if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 self.hit = True
                 self._hit_tree()
+                self.hit_sound.play()
                 self.stats.score += 10
                 self.sb.prep_score()
                 self.sb.check_high_score()
@@ -292,6 +304,7 @@ class LumberjackGame:
             self.settings.bee_direction *= -1
             self.bee.flip(True, False)
             self.bee.change_height()
+            self.bee.sound.play(2)
         self.bee.update()
 
     def _update_slice_wood(self, pos):
@@ -308,39 +321,47 @@ class LumberjackGame:
     def _update_screen(self):
         self.screen.fill(self.settings.bg_color)
         self.background.blit_me()
-        for cloud in self.clouds:
-            cloud.blit_me()
-        self.bee.blit_me()
+        if not self.stats.game_active and not self.collision:
 
-        if self.hit:
-            self.trunk_base.blit_me()
-            self.slice_wood.blit_me()
-            self.trunk.blit_me()
-            if not self.collision:
-                self.lumberjack_hit.blit_me()
+            self.intro_text = self.font.render("The Lumberjack", True, self.settings.text_color)
+            self.intro_text_rect = self.intro_text.get_rect()
+            self.intro_text_rect.center = (self.screen_width / 2, 100)
+            self.screen.blit(self.intro_text, self.intro_text_rect)
+
+            self.enter_text = self.font.render("Press Enter to start", True, self.settings.text_color)
+            self.enter_text_rect = self.enter_text.get_rect()
+            self.enter_text_rect.center = (self.screen_width / 2, self.screen_height / 2)
+            self.screen.blit(self.enter_text, self.enter_text_rect)
         else:
-            self.tree.blit_me()
-            if not self.collision:
-                self.lumberjack_ready.blit_me()
+            for cloud in self.clouds:
+                cloud.blit_me()
+            self.bee.blit_me()
 
-        if self.collision:
-            self.stats.game_active = False
-            if self.timer.timeout:
-                self._game_over("Koniec czasu")
+            if self.hit:
+                self.trunk_base.blit_me()
+                self.slice_wood.blit_me()
+                self.trunk.blit_me()
+                if not self.collision:
+                    self.lumberjack_hit.blit_me()
             else:
-                self._game_over("Zgnieciony")
-            self.grave.blit_me()
+                self.tree.blit_me()
+                if not self.collision:
+                    self.lumberjack_ready.blit_me()
 
-        for branch in self.branches:
-            if branch is not None:
-                branch[0].blit_me()
+            if self.collision:
+                self.stats.game_active = False
+                if self.timer.timeout:
+                    self._game_over("Koniec czasu")
+                else:
+                    self._game_over("Zgnieciony")
+                self.grave.blit_me()
 
-        self.sb.show_score()
-        self.timer.draw()
-        #
-        # if not self.stats.game_active:
-        #     self.play_button.draw_button()
-        #
+            for branch in self.branches:
+                if branch is not None:
+                    branch[0].blit_me()
+
+            self.sb.show_score()
+            self.timer.draw()
         pygame.display.flip()
         self.clock.tick(self.settings.FPS)
 
