@@ -39,7 +39,7 @@ class Scoreboard:
 
         # Wyświetlanie najlepszego wyniku na środku, przy górnej krawędzi ekranu
         self.high_score_rect = self.high_score_image.get_rect()
-        self.high_score_rect.centerx = self.screen_rect.centerx
+        self.high_score_rect.left = self.screen_rect.left + 20
         self.high_score_rect.top = self.score_rect.top
 
     def show_score(self):

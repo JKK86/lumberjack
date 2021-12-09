@@ -5,6 +5,7 @@ import pygame
 import pygame.font
 
 from game_stats import GameStats
+from highscores import Highscores
 from landscape import Cloud, LandscapeBaseClass, Bee, Tree, Lumberjack, BranchProvider
 from scoreboard import Scoreboard
 from settings import Settings
@@ -21,10 +22,13 @@ class LumberjackGame:
         self.settings = Settings()
         self.stats = GameStats(self)
 
+
         self.screen = pygame.display.set_mode(
             (self.settings.screen_width, self.settings.screen_height), pygame.RESIZABLE)
         self.screen_width = self.screen.get_width()
         self.screen_height = self.screen.get_height()
+
+        self.hs = Highscores(self)
 
         self.font = pygame.font.Font('fonts/bungee-regular.ttf', 50)
 
@@ -44,7 +48,8 @@ class LumberjackGame:
         self.branches = []
 
         self.scalable = [self.background, self.bee, self.trunk, self.trunk_base, self.tree,
-                         self.slice_wood, self.lumberjack_ready, self.lumberjack_hit, self.grave] + self.clouds
+                         self.slice_wood, self.lumberjack_ready, self.lumberjack_hit, self.grave,
+                         self.hs.board, self.hs.tag] + self.clouds
 
         self._scale_to(self.scalable,
                        (self.settings.bg_width, self.settings.bg_height),
@@ -65,6 +70,12 @@ class LumberjackGame:
             (self.trunk.x - 0.5 * self.trunk.rect.width - self.lumberjack_ready.rect.width + 16,
              self.screen_height * self.settings.lumberjack_scale - self.lumberjack_hit.rect.height))
 
+        self.hs.board.set_position((self.screen_width / 2 - self.hs.board.rect.width / 2,
+                                      self.screen_height / 2 - self.hs.board.rect.height / 2))
+        # self.hs.tag.rect.center = self.screen.get_rect().center
+        self.hs.tag.set_position((self.screen_width / 2 - self.hs.tag.rect.width / 2,
+                                    self.screen_height / 2 - self.hs.tag.rect.height / 2))
+
         self.hit = False
         self.lumberjack_on_left = True
 
@@ -77,7 +88,10 @@ class LumberjackGame:
         self.collision = False
 
         self.sb = Scoreboard(self)
+
         self.timer = Timer(self)
+
+        self.text_editor_mode = False
 
         self.hit_sound = pygame.mixer.Sound('sounds/hit_tree.wav')
         self.fail_sound = pygame.mixer.Sound('sounds/groan.wav')
@@ -105,6 +119,7 @@ class LumberjackGame:
         self.timer.timeout = False
         self.collision = False
         self.hit = False
+        self.hs.name = ''
         self.sb.prep_score()
         self.timer.prep_timer()
         pygame.mixer.music.load('music/nature.mp3')
@@ -122,7 +137,9 @@ class LumberjackGame:
     def _check_keydown_events(self, event):
         if event.key == pygame.K_ESCAPE:
             sys.exit()
-        elif event.key == pygame.K_RETURN and not self.stats.game_active:
+        if self.text_editor_mode:
+            self.hs.append_player_name(pygame.key.name(event.key))
+        elif event.key == pygame.K_RETURN and not self.stats.game_active and not self.text_editor_mode:
             self._start_game()
         elif event.key == pygame.K_f:
             self._change_fullscreen()
@@ -332,6 +349,8 @@ class LumberjackGame:
             self.enter_text_rect = self.enter_text.get_rect()
             self.enter_text_rect.center = (self.screen_width / 2, self.screen_height / 2)
             self.screen.blit(self.enter_text, self.enter_text_rect)
+        elif not self.text_editor_mode and self.hs.name:
+            self.hs.draw()
         else:
             for cloud in self.clouds:
                 cloud.blit_me()
@@ -348,17 +367,20 @@ class LumberjackGame:
                 if not self.collision:
                     self.lumberjack_ready.blit_me()
 
-            if self.collision:
-                self.stats.game_active = False
-                if self.timer.timeout:
-                    self._game_over("Koniec czasu")
-                else:
-                    self._game_over("Zgnieciony")
-                self.grave.blit_me()
-
             for branch in self.branches:
                 if branch is not None:
                     branch[0].blit_me()
+
+            if self.collision:
+                self.stats.game_active = False
+                if self.timer.timeout:
+                    self._game_over("Timeout")
+                else:
+                    self._game_over("Crushed")
+                self.grave.blit_me()
+                if self.hs.check_highscores_list():
+                    self.hs.show_player_name()
+                    self.text_editor_mode = True
 
             self.sb.show_score()
             self.timer.draw()

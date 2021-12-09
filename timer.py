@@ -34,7 +34,6 @@ class Timer:
                                 self.screen_height - 20 * self.screen_height / 450 - 20,
                                 self.timer_width, self.timer_height)
 
-
     def draw(self):
         self.screen.fill(self.timer_color, self.rect)
 
