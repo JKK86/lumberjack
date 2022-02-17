@@ -46,7 +46,6 @@ class GameStats:
         for i, line in enumerate(self.highscores):
             name, score = line
 
-
     def reset_stats(self):
         """Inicjalizacja danych statystycznych zmieniających się w czasie gry"""
         self.lives_left = self.settings.lives_limit

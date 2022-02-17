@@ -14,9 +14,6 @@ class Timer:
 
         self.timer_color = (255, 0, 0)
 
-        self.last_time = 0
-
-        self.timeout = False
         self.power_up_sound = pygame.mixer.Sound('sounds/power_up.wav')
 
         self.prep_timer()
@@ -60,3 +57,7 @@ class Timer:
             self.stats.time_left += 20 / self.stats.score + 0.135
         if self.stats.score > 80000:
             self.stats.time_left += 20 / self.stats.score + 0.129
+
+    def reset_timer(self):
+        self.last_time = 0
+        self.timeout = False

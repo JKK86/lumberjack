@@ -22,7 +22,6 @@ class LumberjackGame:
         self.settings = Settings()
         self.stats = GameStats(self)
 
-
         self.screen = pygame.display.set_mode(
             (self.settings.screen_width, self.settings.screen_height), pygame.RESIZABLE)
         self.screen_width = self.screen.get_width()
@@ -115,8 +114,7 @@ class LumberjackGame:
     def _start_game(self):
         self.stats.reset_stats()
         self.stats.game_active = True
-        self.timer.last_time = 0
-        self.timer.timeout = False
+        self.timer.reset_timer()
         self.collision = False
         self.hit = False
         self.hs.name = ''
@@ -165,21 +163,20 @@ class LumberjackGame:
                 self.timer.prep_timer()
 
                 if event.key == pygame.K_LEFT and not self.lumberjack_on_left:
-                    self.lumberjack_ready.flip(True, False)
-                    self.lumberjack_hit.flip(True, False)
+                    self._flip_lumberjack(flip_direction=-1)
                     self.lumberjack_on_left = True
-                    self.lumberjack_ready.x -= 3.44 * self.trunk.rect.width
-                    self.lumberjack_ready.rect.x = self.lumberjack_ready.x
-                    self.lumberjack_hit.x -= 2 * self.trunk.rect.width
-                    self.lumberjack_hit.rect.x = self.lumberjack_hit.x
                 if event.key == pygame.K_RIGHT and self.lumberjack_on_left:
-                    self.lumberjack_ready.flip(True, False)
-                    self.lumberjack_hit.flip(True, False)
+                    self._flip_lumberjack(flip_direction=1)
                     self.lumberjack_on_left = False
-                    self.lumberjack_ready.x += 3.44 * self.trunk.rect.width
-                    self.lumberjack_ready.rect.x = self.lumberjack_ready.x
-                    self.lumberjack_hit.x += 2 * self.trunk.rect.width
-                    self.lumberjack_hit.rect.x = self.lumberjack_hit.x
+
+    def _flip_lumberjack(self, flip_direction: int):
+        # flip_direction wynoszące 1 oznacza przejście na prawo, a -1 w lewo
+        self.lumberjack_ready.flip(True, False)
+        self.lumberjack_hit.flip(True, False)
+        self.lumberjack_ready.x += flip_direction * 3.44 * self.trunk.rect.width
+        self.lumberjack_ready.rect.x = self.lumberjack_ready.x
+        self.lumberjack_hit.x += flip_direction * 2 * self.trunk.rect.width
+        self.lumberjack_hit.rect.x = self.lumberjack_hit.x
 
     def _check_keyup_events(self, event):
         if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
@@ -202,7 +199,7 @@ class LumberjackGame:
             self._scale_to(self.get_all_branches(), surface_size,
                            (self.settings.screen_width, self.settings.screen_height))
             self.font = pygame.font.Font('fonts/bungee-regular.ttf',
-                                         int(50 * (self.screen_width / self.settings.screen_width)))
+                                         int(50 * (self.screen_width / self.settings.screen_width))) # Czy to potrzebne?
 
         else:
             self.settings.fullscreen = True

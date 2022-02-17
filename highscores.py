@@ -14,16 +14,8 @@ class Highscores:
         self.stats = lj_game.stats
 
         self.tag = LandscapeBaseClass(self.lj_game, 'wood_tag.png')
-        # self.tag = pygame.image.load('images/wood-tag.png')
-        # self.tag_rect = self.tag.rect
-        # self.tag_rect.center = self.screen_rect.center
 
-        self.board = LandscapeBaseClass(self.lj_game, 'wood_board.png')
-        # self.board = pygame.image.load('images/wood-board.jpg')
-        # self.board_rect = self.board.rect
-        # self.board.rect.center = self.screen_rect.center
-        # print("Center" + str(self.board.rect.centerx) + str(self.board.rect.centery))
-        # Ustawienia czcionki dla informacji dotyczącej punktacji
+        self.board = LandscapeBaseClass(self.lj_game, 'wood_board2.png')
         self.text_color = self.settings.text_color
         self.font = pygame.font.Font('fonts/bungee-regular.ttf',
                                      int(20 * (self.screen.get_width() / self.settings.screen_width)))
@@ -83,7 +75,7 @@ class Highscores:
         headline = self.font.render("HIGHSCORES", True, self.settings.text_color)
         headline_rect = headline.get_rect()
         headline_rect.centerx = self.board.rect.centerx
-        headline_rect.top = self.board.rect.top + 5
+        headline_rect.top = self.board.rect.top + 3
         for i, line in enumerate(self.highscores):
             name, score = line
             result_name = self.font.render(f"{i+1}. {name}", True, self.settings.text_color)
@@ -94,11 +86,9 @@ class Highscores:
             result_name_rect.left = self.board.rect.left + 10
             result_score_rect.right = self.board.rect.right - 10
 
-            result_name_rect.top = self.board.rect.top + 5 + 29 * (i + 2)
-            result_score_rect.top = self.board.rect.top + 5 + 29 * (i + 2)
+            result_name_rect.top = self.board.rect.top + 26 * (i + 2)
+            result_score_rect.top = self.board.rect.top + 26 * (i + 2)
 
-            # result_name_rect.topleft = (100, 100 + 40 * i)
-            # result_score_rect.topleft = (400, 100 + 40 * i)
             self.screen.blit(headline, headline_rect)
             self.screen.blit(result_name, result_name_rect)
             self.screen.blit(result_score, result_score_rect)
